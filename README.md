@@ -26,145 +26,102 @@ Key Features:
 Author: [Raman]
 Date: 4 sept, 2025
 ------------------------------------------------------------
-*/
+# Weather Record ADT
+class WeatherRecord:
+    def _init_(self, date, city, temperature):
+        self.date = date
+        self.city = city
+        self.temperature = temperature
 
-import java.util.*;
+    def _repr_(self):
+        return f"WeatherRecord(Date={self.date}, City={self.city}, Temp={self.temperature})"
 
-class WeatherRecord {
-    String date;
-    String city;
-    double temperature;
 
-    WeatherRecord(String d, String c, double t) {
-        this.date = d;
-        this.city = c;
-        this.temperature = t;
-    }
-}
+# Data Storage Class (2D Array + ADT)
+class WeatherDataStorage:
+    def _init_(self, years, cities):
+        # Years and cities lists
+        self.years = years
+        self.cities = cities
+        # Initialize 2D array with sentinel (-9999 for missing values)
+        self.data = [[-9999 for _ in range(len(cities))] for _ in range(len(years))]
 
-class WeatherStorage {
-    private List<String> cities;
-    private List<Integer> years;
-    private double[][] data;
-    private final double sentinel = -999.0;
+    def insert(self, year, city, temp):
+        if year in self.years and city in self.cities:
+            r = self.years.index(year)
+            c = self.cities.index(city)
+            self.data[r][c] = temp
+        else:
+            print("Invalid year or city")
 
-    WeatherStorage(List<String> cities, List<Integer> years) {
-        this.cities = cities;
-        this.years = years;
-        this.data = new double[years.size()][cities.size()];
+    def delete(self, year, city):
+        if year in self.years and city in self.cities:
+            r = self.years.index(year)
+            c = self.cities.index(city)
+            self.data[r][c] = -9999  # Sentinel value for missing
+        else:
+            print("Invalid year or city")
 
-        // Initialize with sentinel
-        for (int i = 0; i < years.size(); i++) {
-            Arrays.fill(this.data[i], sentinel);
-        }
-    }
+    def retrieve(self, city, year):
+        if year in self.years and city in self.cities:
+            r = self.years.index(year)
+            c = self.cities.index(city)
+            value = self.data[r][c]
+            return None if value == -9999 else value
+        return None
 
-    // Insert record
-    public void insert(String city, int year, double temp) {
-        int row = findYear(year);
-        int col = findCity(city);
-        if (row != -1 && col != -1) {
-            data[row][col] = temp;
-        }
-    }
+    def rowMajorAccess(self):
+        print("Row-Major Access (Year-wise):")
+        for r in range(len(self.years)):
+            for c in range(len(self.cities)):
+                print(f"({self.years[r]}, {self.cities[c]}): {self.data[r][c]}")
 
-    // Delete record
-    public void remove(String city, int year) {
-        int row = findYear(year);
-        int col = findCity(city);
-        if (row != -1 && col != -1) {
-            data[row][col] = sentinel;
-        }
-    }
+    def columnMajorAccess(self):
+        print("Column-Major Access (City-wise):")
+        for c in range(len(self.cities)):
+            for r in range(len(self.years)):
+                print(f"({self.years[r]}, {self.cities[c]}): {self.data[r][c]}")
 
-    // Retrieve record
-    public double retrieve(String city, int year) {
-        int row = findYear(year);
-        int col = findCity(city);
-        if (row != -1 && col != -1) {
-            return data[row][col];
-        }
-        return sentinel;
-    }
+    def handleSparseData(self):
+        sparse_repr = {}
+        for r in range(len(self.years)):
+            for c in range(len(self.cities)):
+                if self.data[r][c] != -9999:
+                    sparse_repr[(self.years[r], self.cities[c])] = self.data[r][c]
+        return sparse_repr
 
-    // Row-major traversal
-    public void rowMajorAccess() {
-        System.out.println("\nRow-major traversal:");
-        for (int i = 0; i < years.size(); i++) {
-            for (int j = 0; j < cities.size(); j++) {
-                System.out.println("Year: " + years.get(i) + 
-                                   " City: " + cities.get(j) +
-                                   " Temp: " + data[i][j]);
-            }
-        }
-    }
+    def analyzeComplexity(self):
+        print("Time Complexity (Insert/Retrieve/Delete): O(1)")
+        print("Space Complexity: O(Y * C), where Y=Years, C=Cities")
 
-    // Column-major traversal
-    public void columnMajorAccess() {
-        System.out.println("\nColumn-major traversal:");
-        for (int j = 0; j < cities.size(); j++) {
-            for (int i = 0; i < years.size(); i++) {
-                System.out.println("Year: " + years.get(i) + 
-                                   " City: " + cities.get(j) +
-                                   " Temp: " + data[i][j]);
-            }
-        }
-    }
 
-    // Handle sparse data
-    public void handleSparseData() {
-        int missing = 0;
-        for (int i = 0; i < years.size(); i++) {
-            for (int j = 0; j < cities.size(); j++) {
-                if (data[i][j] == sentinel) missing++;
-            }
-        }
-        System.out.println("\nMissing records: " + missing);
-    }
+# -------------------------------
+# Example Usage
+# -------------------------------
+if _name_ == "_main_":
+    years = [2023, 2024, 2025]
+    cities = ["Delhi", "Mumbai", "Chennai"]
 
-    // Complexity analysis
-    public void analyzeComplexity() {
-        System.out.println("\nComplexity Analysis:");
-        System.out.println("Insert: O(1)");
-        System.out.println("Delete: O(1)");
-        System.out.println("Retrieve: O(1)");
-        System.out.println("Row/Column traversal: O(m*n)");
-        System.out.println("(m = years, n = cities)");
-    }
+    storage = WeatherDataStorage(years, cities)
 
-    // Helper methods
-    private int findCity(String city) {
-        return cities.indexOf(city);
-    }
+    # Insert records
+    storage.insert(2023, "Delhi", 35.5)
+    storage.insert(2024, "Mumbai", 30.2)
+    storage.insert(2025, "Chennai", 32.8)
 
-    private int findYear(int year) {
-        return years.indexOf(year);
-    }
-}
+    # Retrieve
+    print("Retrieve:", storage.retrieve("Delhi", 2023))
 
-public class WeatherSystem {
-    public static void main(String[] args) {
-        List<String> cities = Arrays.asList("Delhi", "Mumbai", "Chennai");
-        List<Integer> years = Arrays.asList(2023, 2024, 2025);
+    # Delete
+    storage.delete(2024, "Mumbai")
+    print("After Deletion:", storage.retrieve("Mumbai", 2024))
 
-        WeatherStorage ws = new WeatherStorage(cities, years);
+    # Row-major and column-major access
+    storage.rowMajorAccess()
+    storage.columnMajorAccess()
 
-        // Insert records
-        ws.insert("Delhi", 2023, 32.5);
-        ws.insert("Mumbai", 2024, 29.8);
-        ws.insert("Chennai", 2025, 35.2);
+    # Sparse data representation
+    print("Sparse Representation:", storage.handleSparseData())
 
-        // Retrieve
-        System.out.println("Delhi 2023 Temp: " + ws.retrieve("Delhi", 2023));
-
-        // Row-major & column-major traversal
-        ws.rowMajorAccess();
-        ws.columnMajorAccess();
-
-        // Sparse data handling
-        ws.handleSparseData();
-
-        // Complexity analysis
-        ws.analyzeComplexity();
-    }
-}
+    # Complexity analysis
+    storage.analyzeComplexity()
