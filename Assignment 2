@@ -1,0 +1,258 @@
+import java.util.*;
+
+// Node for Linked List
+class Book {
+    int bookID;
+    String title;
+    String author;
+    String status; // Available or Issued
+    Book next;
+
+    Book(int bookID, String title, String author, String status) {
+        this.bookID = bookID;
+        this.title = title;
+        this.author = author;
+        this.status = status;
+        this.next = null;
+    }
+}
+
+// Linked List Class for managing books
+class BookList {
+    Book head;
+
+    // Insert a new book
+    void insertBook(int id, String title, String author) {
+        Book newBook = new Book(id, title, author, "Available");
+        if (head == null) {
+            head = newBook;
+        } else {
+            Book temp = head;
+            while (temp.next != null) temp = temp.next;
+            temp.next = newBook;
+        }
+        System.out.println("Book added successfully!");
+    }
+
+    // Delete a book by ID
+    void deleteBook(int id) {
+        if (head == null) {
+            System.out.println(" No books in the library.");
+            return;
+        }
+        if (head.bookID == id) {
+            head = head.next;
+            System.out.println(" Book deleted successfully!");
+            return;
+        }
+        Book temp = head;
+        while (temp.next != null && temp.next.bookID != id) temp = temp.next;
+        if (temp.next == null) {
+            System.out.println(" Book not found!");
+        } else {
+            temp.next = temp.next.next;
+            System.out.println("Book deleted successfully!");
+        }
+    }
+
+    // Search a book by ID
+    Book searchBook(int id) {
+        Book temp = head;
+        while (temp != null) {
+            if (temp.bookID == id) return temp;
+            temp = temp.next;
+        }
+        return null;
+    }
+
+    // Display all books
+    void displayBooks() {
+        if (head == null) {
+            System.out.println(" Library is empty.");
+            return;
+        }
+        Book temp = head;
+        System.out.println("\nCurrent Library Books:");
+        System.out.println("ID\tTitle\t\tAuthor\t\tStatus");
+        while (temp != null) {
+            System.out.println(temp.bookID + "\t" + temp.title + "\t\t" + temp.author + "\t\t" + temp.status);
+            temp = temp.next;
+        }
+        System.out.println();
+    }
+}
+
+// Stack for Transactions
+class Transaction {
+    String type; // issue or return
+    int bookID;
+
+    Transaction(String type, int bookID) {
+        this.type = type;
+        this.bookID = bookID;
+    }
+}
+
+// Stack Implementation using ArrayList
+class TransactionStack {
+    ArrayList<Transaction> stack = new ArrayList<>();
+
+    void push(Transaction t) {
+        stack.add(t);
+    }
+
+    Transaction pop() {
+        if (stack.isEmpty()) return null;
+        return stack.remove(stack.size() - 1);
+    }
+
+    void viewTransactions() {
+        if (stack.isEmpty()) {
+            System.out.println(" No transactions yet.");
+            return;
+        }
+        System.out.println("\nTransaction History:");
+        for (int i = stack.size() - 1; i >= 0; i--) {
+            Transaction t = stack.get(i);
+            System.out.println(t.type.toUpperCase() + " -> Book ID: " + t.bookID);
+        }
+    }
+}
+
+// Transaction Management System
+class LibrarySystem {
+    BookList bookList = new BookList();
+    TransactionStack transactionStack = new TransactionStack();
+
+    // Issue book
+    void issueBook(int id) {
+        Book b = bookList.searchBook(id);
+        if (b == null) {
+            System.out.println(" Book not found!");
+            return;
+        }
+        if (b.status.equals("Issued")) {
+            System.out.println(" Book already issued!");
+            return;
+        }
+        b.status = "Issued";
+        transactionStack.push(new Transaction("issue", id));
+        System.out.println(" Book issued successfully!");
+    }
+
+    // Return book
+    void returnBook(int id) {
+        Book b = bookList.searchBook(id);
+        if (b == null) {
+            System.out.println(" Book not found!");
+            return;
+        }
+        if (b.status.equals("Available")) {
+            System.out.println(" Book is not issued!");
+            return;
+        }
+        b.status = "Available";
+        transactionStack.push(new Transaction("return", id));
+        System.out.println(" Book returned successfully!");
+    }
+
+    // Undo last transaction
+    void undoTransaction() {
+        Transaction last = transactionStack.pop();
+        if (last == null) {
+            System.out.println(" No transaction to undo.");
+            return;
+        }
+        Book b = bookList.searchBook(last.bookID);
+        if (b == null) return;
+
+        if (last.type.equals("issue")) {
+            b.status = "Available";
+            System.out.println(" Undo successful: Book returned to library.");
+        } else if (last.type.equals("return")) {
+            b.status = "Issued";
+            System.out.println(" Undo successful: Book marked as issued again.");
+        }
+    }
+
+    // Display all books
+    void displayBooks() {
+        bookList.displayBooks();
+    }
+
+    // Display all transactions
+    void viewTransactions() {
+        transactionStack.viewTransactions();
+    }
+}
+
+// Main Class
+public class LibraryManagement {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        LibrarySystem system = new LibrarySystem();
+        int choice;
+
+        while (true) {
+            System.out.println("\n===== Library Book Management System =====");
+            System.out.println("1. Insert Book");
+            System.out.println("2. Delete Book");
+            System.out.println("3. Search Book");
+            System.out.println("4. Display Books");
+            System.out.println("5. Issue Book");
+            System.out.println("6. Return Book");
+            System.out.println("7. Undo Last Transaction");
+            System.out.println("8. View Transactions");
+            System.out.println("9. Exit");
+            System.out.print("Enter your choice: ");
+            choice = sc.nextInt();
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter Book ID: ");
+                    int id = sc.nextInt();
+                    sc.nextLine();
+                    System.out.print("Enter Title: ");
+                    String title = sc.nextLine();
+                    System.out.print("Enter Author: ");
+                    String author = sc.nextLine();
+                    system.bookList.insertBook(id, title, author);
+                    break;
+                case 2:
+                    System.out.print("Enter Book ID to delete: ");
+                    system.bookList.deleteBook(sc.nextInt());
+                    break;
+                case 3:
+                    System.out.print("Enter Book ID to search: ");
+                    Book found = system.bookList.searchBook(sc.nextInt());
+                    if (found != null)
+                        System.out.println(" Found: " + found.title + " by " + found.author + " (" + found.status + ")");
+                    else
+                        System.out.println(" Book not found.");
+                    break;
+                case 4:
+                    system.displayBooks();
+                    break;
+                case 5:
+                    System.out.print("Enter Book ID to issue: ");
+                    system.issueBook(sc.nextInt());
+                    break;
+                case 6:
+                    System.out.print("Enter Book ID to return: ");
+                    system.returnBook(sc.nextInt());
+                    break;
+                case 7:
+                    system.undoTransaction();
+                    break;
+                case 8:
+                    system.viewTransactions();
+                    break;
+                case 9:
+                    System.out.println("👋 Exiting system...");
+                    return;
+                default:
+                    System.out.println("⚠️ Invalid choice!");
+            }
+        }
+    }
+}
